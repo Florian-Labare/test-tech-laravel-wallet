@@ -13,6 +13,8 @@ class Wallet extends Model
 {
     use HasFactory;
 
+    public const MIN_BALANCE_SUM = 10;
+
     /**
      * @return BelongsTo<User>
      */

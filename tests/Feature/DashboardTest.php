@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
+use App\Mail\AlertLowBalance;
 use App\Models\User;
 use App\Models\Wallet;
 
+use Illuminate\Support\Facades\Mail;
 use function Pest\Laravel\actingAs;
 
 test('dashboard page is displayed', function () {
@@ -25,6 +27,16 @@ test('dashboard page is displayed', function () {
 
 test('send money to a friend', function () {
     $user = User::factory()->has(Wallet::factory()->richChillGuy())->create();
+
+    if ($user->wallet->balance < Wallet::MIN_BALANCE_SUM) {
+        Mail::assertSent(
+            AlertLowBalance::class,
+            function ($mail) use ($user) {
+                return $mail->hasTo($user->email);
+            }
+        );
+    }
+
     $recipient = User::factory()->has(Wallet::factory())->create();
 
     $response = actingAs($user)->post('/send-money', [
